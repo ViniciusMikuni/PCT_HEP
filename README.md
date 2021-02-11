@@ -41,4 +41,4 @@ python evaluate_transformer.py --sample [qg/multi/top] [--simple]  --model_path 
 MIT License
 
 # Acknowledgements
-ABCNet uses a modified version of [PCT](https://arxiv.org/pdf/2012.09688.pdf) implemented using the basic framework from [PointNet](https://github.com/charlesq34/pointnet).
+A modified version of [PCT](https://arxiv.org/pdf/2012.09688.pdf) is used and implemented using the basic framework from [PointNet](https://github.com/charlesq34/pointnet).
