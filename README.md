@@ -13,7 +13,9 @@ The implementation uses a modified version of [PCT](https://arxiv.org/pdf/2012.0
 First, download the data for the application you want to test:
 
 [Top quark dataset](https://zenodo.org/record/2603256)
+
 [Quark/Gluon dataset](https://zenodo.org/record/3164691)
+
 [Multiclassification dataset](https://zenodo.org/record/3602254)
 
 To convert these files into the format required for the training, use the following scripts:
