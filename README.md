@@ -2,22 +2,36 @@
 
 This is the main repository for the [PCT HEP paper](https://arxiv.org/abs/2001.05311).
 The implementation uses a modified version of [PCT](https://arxiv.org/pdf/2012.09688.pdf) to suit the High Energy Physics needs.
-The input ```.h5``` files are expected to have the following structure:
-
-* **data**: [N,P,F], 
-* **pid**: [N]
-
-N = Number of events
-F = Number of features per point
-P = Number of points
-
-To verify/change the name of the input files containing different datasets see the training script ```train_transformer.py```
 
 # Requirements
 
 [Tensorflow 1.14](https://www.tensorflow.org/)
 
 [h5py](https://www.h5py.org/)
+
+# Preparing the datasets
+First, download the data for the application you want to test:
+
+[Top quark dataset](https://zenodo.org/record/2603256)
+[Quark/Gluon dataset](https://zenodo.org/record/3164691)
+[Multiclassification dataset](https://zenodo.org/record/3602254)
+
+To convert these files into the format required for the training, use the following scripts:
+
+```bash
+#Top quark dataset
+python prepare_top.py --sample[val.h5/train.h5/test.h5] --out OUT_FILE_NAME
+
+#Quark gluon dataset
+python prepare_qg.py --out OUT_FILE_NAME
+
+#Multiclassification dataset
+python prepare_multi.py [--make_eval] --out OUT_FILE_NAME
+```
+For additional options, just run the scripts with the ```--help``` flag
+To verify/change the name of the input files containing different datasets see the training script ```train_transformer.py```
+
+
 
 # Training
 
