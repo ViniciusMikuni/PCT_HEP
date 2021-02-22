@@ -1,3 +1,4 @@
+
 import pandas as pd
 import h5py
 import os
@@ -25,7 +26,7 @@ def convert_back(px,py,pz):
     eta = np.arcsinh(pz/pt)
 
         
-    return pt,eta,phi
+    return np.abs(pt),eta,phi
 
 
 
