@@ -8,9 +8,9 @@ from optparse import OptionParser
 
 def convert_back(px,py,pz):
     energy  = np.sqrt(px**2 + py**2 + pz**2)    
-    phi = np.arctan(py/px)
+    phi = np.arctan2(py,px)
     pt = px/np.cos(phi)
-    eta = np.arcsinh(pz/pt)
+    eta = np.arcsinh(pz/np.abs(pt))
         
     return pt,eta,phi,energy
 
@@ -57,15 +57,21 @@ def clustering_sum(data,nparts=100,out_dir):
         data_clip.append(sample[:,:nparts])#Clip at nparts
 
     print("Adding clouds...")
+    jets = np.array(jets)
     data_clip = np.concatenate(data_clip,axis=0)
+    delta_phi = data_clip[:,:,2] - np.expand_dims(jets[:,2],-1)
+    delta_phi[delta_phi>np.pi] -=  2*np.pi
+    delta_phi[delta_phi<= - np.pi] +=  2*np.pi
+    
+    
     points = np.zeros((data_clip.shape[0],data_clip.shape[1],NFEAT))
-    points[:,:,0] = data_clip[:,:,1] - np.expand_dims(np.array(jets)[:,1],-1) #eta
-    points[:,:,1] = data_clip[:,:,2] - np.expand_dims(np.array(jets)[:,2],-1) #phi
+    points[:,:,0] = (data_clip[:,:,1] - np.expand_dims(jets[:,1],-1))*(data_clip[:,:,1]!=0) #eta
+    points[:,:,1] = delta_phi*(data_clip[:,:,1]!=0) #phi
     points[:,:,2] = np.ma.log(data_clip[:,:,0])  #log pt
-    points[:,:,3] = np.ma.log(GetE(data_clip))  #log e
-    points[:,:,4] = np.ma.log(GetE(data_clip)/np.expand_dims(np.array(jets)[:,3],-1))  #log e/jet e
-    points[:,:,5] = np.ma.log(data_clip[:,:,0]/np.expand_dims(np.array(jets)[:,0],-1))  #log pt/jet pt
-    points[:,:,6] = np.sqrt((data_clip[:,:,1] - np.expand_dims(np.array(jets)[:,1],-1))**2 + (data_clip[:,:,2] - np.expand_dims(np.array(jets)[:,2],-1))**2)
+    points[:,:,3] = np.ma.log(GetE(data_clip))  #log e  
+    points[:,:,4] = np.ma.log(GetE(data_clip)/np.expand_dims(jets[:,3],-1))  #log e/jet e
+    points[:,:,5] = np.ma.log(data_clip[:,:,0]/np.expand_dims(jets[:,0],-1))  #log pt/jet pt
+    points[:,:,6] = np.sqrt((data_clip[:,:,1] - np.expand_dims(jets[:,1],-1))**2 + delta_phi**2)*(data_clip[:,:,1]!=0)
     points[:,:,7] = np.ma.divide(data_clip[:,:,3],np.abs(data_clip[:,:,3]))
     points[:,:,8] = np.abs(data_clip[:,:,3])==11
     points[:,:,9] = np.abs(data_clip[:,:,3])==13

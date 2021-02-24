@@ -13,17 +13,17 @@ def convert_coordinate(data):
     energy  = data[:,:,0]
 
     
-    phi = np.ma.arctan(np.divide(py,px, out=np.zeros_like(py), where=px!=0)).filled(0)
+    phi = np.ma.arctan2(py,px, out=np.zeros_like(py), where=px!=0).filled(0)
     pt = px/np.cos(phi)
-    eta = np.ma.arcsinh(np.divide(pz,pt, out=np.zeros_like(pz), where=pt!=0)).filled(0)
+    eta = np.ma.arcsinh(np.divide(pz,np.abs(pt), out=np.zeros_like(pz), where=pt!=0)).filled(0)
 
 
     return np.abs(pt),eta,phi,energy
 
 def convert_back(px,py,pz):
-    phi = np.arctan(py/px)
+    phi = np.arctan2(py,px)
     pt = px/np.cos(phi)
-    eta = np.arcsinh(pz/pt)
+    eta = np.arcsinh(pz/np.abs(pt))
 
         
     return np.abs(pt),eta,phi
@@ -46,13 +46,20 @@ def clustering_sum(data,output_name,nevents=1000,nparts=100):
     points = np.zeros((particles.shape[0],particles.shape[1],NFEAT))
     pt,eta,phi,energy = convert_coordinate(particles)
 
-    points[:,:,0] = (eta - np.expand_dims(jets_eta,-1))*(eta!=0)
-    points[:,:,1] = (phi - np.expand_dims(jets_phi,-1))*(eta!=0)
+
+    delta_phi = phi - np.expand_dims(jets_phi,-1)
+    delta_phi[delta_phi>np.pi] -=  2*np.pi
+    delta_phi[delta_phi<= - np.pi] +=  2*np.pi
+
+
+    points[:,:,0] = (eta - np.expand_dims(jets_eta,-1))*(pt!=0)
+    points[:,:,1] = delta_phi*(pt!=0)
     points[:,:,2] = np.ma.log(pt)
     points[:,:,3] = np.ma.log(energy)
-    points[:,:,4] = np.ma.log(energy/np.expand_dims(jets_energy,-1)) 
-    points[:,:,5] = np.ma.log(pt/np.expand_dims(jets_pt,-1))
-    points[:,:,6] = np.sqrt((eta - np.expand_dims(jets_eta,-1))**2 + (phi - np.expand_dims(jets_phi,-1))**2)*(eta!=0)
+    points[:,:,4] = np.ma.log(pt/np.expand_dims(jets_pt,-1))
+    points[:,:,5] = np.ma.log(energy/np.expand_dims(jets_energy,-1))
+    points[:,:,6] = np.sqrt((eta - np.expand_dims(jets_eta,-1))**2 + delta_phi**2)*(pt!=0)
+
     
 
     with h5py.File(output_name, "w") as fh5:
