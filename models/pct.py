@@ -124,7 +124,7 @@ def get_model(point_cloud, mask,is_training, num_class,
                          bn=True, is_training=is_training, 
                          scope=scname+'concat', bn_decay=bn_decay)
 
-    net = tf.reduce_mean(net, axis=2, keep_dims=True)    
+    net = tf.reduce_mean(net, axis=1, keep_dims=True)    
     net = tf.reshape(net, [batch_size, -1]) 
 
     net = tf_util.fully_connected(net, 128, bn=True, is_training=is_training,
@@ -170,7 +170,7 @@ def get_model_simple(point_cloud, mask,is_training, num_class,
                          bn=False, is_training=is_training, 
                          scope=scname+'concat', bn_decay=bn_decay)
 
-    net = tf.reduce_mean(net, axis=2, keep_dims=True)    
+    net = tf.reduce_mean(net, axis=1, keep_dims=True)    
     net = tf.reshape(net, [batch_size, -1]) 
 
     net = tf_util.fully_connected(net, 64, bn=True, is_training=is_training,
