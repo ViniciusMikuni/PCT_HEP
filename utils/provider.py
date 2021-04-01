@@ -9,7 +9,7 @@ sys.path.append(BASE_DIR)
 # Download dataset for point cloud classification
 
 
-def shuffle_data(data, labels,global_pl=[],weights=[]):
+def shuffle_data(data, labels):
   """ Shuffle data and labels.
     Input:
       data: B,N,... numpy array
@@ -20,14 +20,21 @@ def shuffle_data(data, labels,global_pl=[],weights=[]):
   #np.random.seed(0)
   idx = np.arange(len(labels))
   np.random.shuffle(idx)
-  #return data[idx,:], labels[idx,:], idx
-  if global_pl != []:
-    return data[idx,:], labels[idx], global_pl[idx,:], idx
-  elif weights == []:
-    return data[idx,:], labels[idx],idx
-  else:
-    return data[idx,:], labels[idx], weights[idx],idx
 
+  return data[idx,:], labels[idx],idx
+
+def shuffle_bes(labels):
+  """ Shuffle data and labels.
+    Input:
+      data: B,N,... numpy array
+      label: B,N, numpy array
+    Return:
+      shuffled data, label and shuffle indices
+  """
+  np.random.seed(0)
+  idx = np.arange(len(labels))
+  np.random.shuffle(idx)
+  return labels[idx],idx
 
 
 def rotate_point_cloud(batch_data):
@@ -158,11 +165,23 @@ def load_h5(h5_filename,mode='seg',unsup=False,glob=False,nevts=-1):
   print("loaded {0} events".format(len(data)))
   return (data, label)
 
-
-def load_lund(h5_filename):
+def load_bes(h5_filename,nevts=-1):
+  
   f = h5py.File(h5_filename,'r')
-  data = f['data'][:]  
-  label = f['truth_label'][:].astype(int)
+  nevts=int(nevts)
+  data={}
+  
+  data['bes'] = f['BES_vars'][:nevts]
+  data['b'] =f['BottomFrame_PFcands'][:nevts]
+  data['H'] =f['HiggsFrame_PFcands'][:nevts]
+  data['lab'] =f['LabFrame_PFcands'][:nevts]
+  data['top'] =f['TopFrame_PFcands'][:nevts]
+  data['W'] =f['WFrame_PFcands'][:nevts]
+  data['Z'] =f['ZFrame_PFcands'][:nevts]
 
-  print("loaded {0} events".format(len(data)))
+  #label = f['pid'][:nevts].astype(int) #No stored in the tet file, will use a dummy instead
+  label = np.random.randint(2, size=data['bes'].shape[0])
+
+
   return (data, label)
+
