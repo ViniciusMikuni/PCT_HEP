@@ -96,7 +96,7 @@ def GetSelfAtt(pc,mask,scname,outsize,is_training,bn_decay):
     return pc+self_att,attention
 
 
-def get_model(point_cloud, mask,is_training, num_class,
+def get_model(point_cloud, mask,is_training,
               weight_decay=None, bn_decay=None,scname=''):
     batch_size = point_cloud.get_shape()[0]
             

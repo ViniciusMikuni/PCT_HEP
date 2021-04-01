@@ -148,23 +148,23 @@ def train():
                                                              scname='LAB',
                                                              bn_decay=bn_decay, weight_decay=FLAGS.wd)
 
-                pred_higgs,att1,att2,att3 = MODEL.get_model_simple(pointclouds_lab,mask_pl, 
+                pred_higgs,att1,att2,att3 = MODEL.get_model_simple(pointclouds_higgs,mask_pl, 
                                                              is_training=is_training,
                                                              scname='HIGGS',
                                                              bn_decay=bn_decay, weight_decay=FLAGS.wd)
-                pred_bottom,att1,att2,att3 = MODEL.get_model_simple(pointclouds_lab,mask_pl, 
+                pred_bottom,att1,att2,att3 = MODEL.get_model_simple(pointclouds_bottom,mask_pl, 
                                                              is_training=is_training,
                                                              scname='BOTTOM',
                                                              bn_decay=bn_decay, weight_decay=FLAGS.wd)
-                pred_top,att1,att2,att3 = MODEL.get_model_simple(pointclouds_lab,mask_pl, 
+                pred_top,att1,att2,att3 = MODEL.get_model_simple(pointclouds_top,mask_pl, 
                                                              is_training=is_training,
                                                              scname='TOP',
                                                              bn_decay=bn_decay, weight_decay=FLAGS.wd)
-                pred_W,att1,att2,att3 = MODEL.get_model_simple(pointclouds_lab,mask_pl, 
+                pred_W,att1,att2,att3 = MODEL.get_model_simple(pointclouds_W,mask_pl, 
                                                              is_training=is_training,
                                                              scname='W',
                                                              bn_decay=bn_decay, weight_decay=FLAGS.wd)
-                pred_Z,att1,att2,att3 = MODEL.get_model_simple(pointclouds_lab,mask_pl, 
+                pred_Z,att1,att2,att3 = MODEL.get_model_simple(pointclouds_Z,mask_pl, 
                                                              is_training=is_training,
                                                              scname='Z',
                                                              bn_decay=bn_decay, weight_decay=FLAGS.wd)
@@ -182,11 +182,41 @@ def train():
                 
 
             else:
-                pred,att1,att2,att3 = MODEL.get_model(pointclouds_pl,mask_pl, 
-                                                      is_training=is_training,
-                                                      scname='PL',
-                                                      num_class=NUM_CLASSES,
-                                                      bn_decay=bn_decay, weight_decay=FLAGS.wd)
+                pred_lab,att1,att2,att3 = MODEL.get_model(pointclouds_lab,mask_pl, 
+                                                             is_training=is_training,
+                                                             scname='LAB',
+                                                             bn_decay=bn_decay, weight_decay=FLAGS.wd)
+
+                pred_higgs,att1,att2,att3 = MODEL.get_model(pointclouds_higgs,mask_pl, 
+                                                             is_training=is_training,
+                                                             scname='HIGGS',
+                                                             bn_decay=bn_decay, weight_decay=FLAGS.wd)
+                pred_bottom,att1,att2,att3 = MODEL.get_model(pointclouds_bottom,mask_pl, 
+                                                             is_training=is_training,
+                                                             scname='BOTTOM',
+                                                             bn_decay=bn_decay, weight_decay=FLAGS.wd)
+                pred_top,att1,att2,att3 = MODEL.get_model(pointclouds_top,mask_pl, 
+                                                             is_training=is_training,
+                                                             scname='TOP',
+                                                             bn_decay=bn_decay, weight_decay=FLAGS.wd)
+                pred_W,att1,att2,att3 = MODEL.get_model(pointclouds_W,mask_pl, 
+                                                             is_training=is_training,
+                                                             scname='W',
+                                                             bn_decay=bn_decay, weight_decay=FLAGS.wd)
+                pred_Z,att1,att2,att3 = MODEL.get_model(pointclouds_Z,mask_pl, 
+                                                             is_training=is_training,
+                                                             scname='Z',
+                                                             bn_decay=bn_decay, weight_decay=FLAGS.wd)
+
+                bes_transform = tf_util.fully_connected(bes_vars, 128, bn=True, is_training=is_training,
+                                                        activation_fn=tf.nn.relu,
+                                                        scope='fc_bes',bn_decay=bn_decay)
+                
+                net = tf.concat([pred_lab,pred_higgs,pred_top,pred_W,pred_Z,bes_transform],-1)
+                pred = MODEL.get_extractor(net,num_class=NUM_CLASSES,layer_size=256,
+                                           is_training=is_training,
+                                           scname='PRED',
+                                           bn_decay=bn_decay, weight_decay=FLAGS.wd)
 
             
 
