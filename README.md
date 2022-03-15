@@ -1,6 +1,6 @@
 # Point Cloud Transformers applied to Collider physics.
 
-This is the main repository for the [PCT HEP paper](https://arxiv.org/abs/2001.05311).
+This is the main repository for the [PCT HEP paper](https://arxiv.org/abs/2102.05073).
 The implementation uses a modified version of [PCT](https://arxiv.org/pdf/2012.09688.pdf) to suit the High Energy Physics needs.
 
 # Requirements
@@ -50,6 +50,24 @@ To evaluate the training use:
 ```bash
 python evaluate_transformer.py --sample [qg/multi/top] [--simple]  --model_path OUTPUT_LOG --batch 1000 --name OUTPUT_NAME 
 ```
+
+# Citation
+
+If this implementation was useful for your work,, please cite the reference paper:
+
+@article{Mikuni:2021pou,
+    author = "Mikuni, Vinicius and Canelli, Florencia",
+    title = "{Point cloud transformers applied to collider physics}",
+    eprint = "2102.05073",
+    archivePrefix = "arXiv",
+    primaryClass = "physics.data-an",
+    doi = "10.1088/2632-2153/ac07f6",
+    journal = "Mach. Learn. Sci. Tech.",
+    volume = "2",
+    number = "3",
+    pages = "035027",
+    year = "2021"
+}
 
 
 # License
