@@ -147,7 +147,7 @@ def pairwise_distanceR(point_cloud, mask=None):
 
     point_cloud = point_cloud[:,:,:2] #eta-phi
   
-    point_cloud_transpose = tf.transpose(point_cloud, perm=[0, 2, 1]))
+    point_cloud_transpose = tf.transpose(point_cloud, perm=[0, 2, 1])
     point_cloud_inner = tf.matmul(point_cloud, point_cloud_transpose) # x.x + y.y + z.z shape: NxN
     point_cloud_inner = -2*point_cloud_inner
     point_cloud_square = tf.reduce_sum(tf.square(point_cloud), axis=-1, keepdims=True) # from x.x, y.y, z.z to x.x + y.y + z.z
@@ -197,9 +197,8 @@ def knn(adj_matrix, k=20):
     return nn_idx
 
 
-def PCT(npoints,nvars=1,nclass=2,nheads=1,nglobal=1):
+def PCT(input_global,npoints,nvars=1,nclass=2,nheads=1):
     inputs = Input((npoints,nvars))
-    input_global = Input((nglobal,))
     batch_size = tf.shape(inputs)[0]
             
     k = 7
@@ -215,11 +214,11 @@ def PCT(npoints,nvars=1,nclass=2,nheads=1,nglobal=1):
     nn_idx = knn(adj, k=k)
 
     edge_feature_1 = GetEdgeFeat(features_0, nn_idx=nn_idx, k=k)    
-    features_1 = GetLocalFeat(edge_feature_1,16*nheads)
+    features_1 = GetLocalFeat(edge_feature_1,32*nheads)
     
-    self_att_1,attention1 = GetSelfAtt(features_0,mask,32*nheads,nheads)
-    self_att_2,attention2 = GetSelfAtt(features_0 + self_att_1,mask,32*nheads,nheads)
-    self_att_3,attention3 = GetSelfAtt(features_1 + self_att_2,mask,32*nheads,nheads)
+    self_att_1,attention1 = GetSelfAtt(features_1,mask,32*nheads,nheads)
+    self_att_2,attention2 = GetSelfAtt(self_att_1,mask,32*nheads,nheads)
+    self_att_3,attention3 = GetSelfAtt(self_att_2,mask,32*nheads,nheads)
 
     concat = tf.concat([
         self_att_1,
@@ -241,25 +240,20 @@ def PCT(npoints,nvars=1,nclass=2,nheads=1,nglobal=1):
     net = tf.concat([net_mean,net_max,net_glob],axis=-1)
     #net = BatchNormalization()(net)
 
-    net = Dense(128,activation='relu')(net)
-    
-    #net = BatchNormalization()(net) 
-    net = Dropout(0.2)(net)
-    net = Dense(64,activation='relu')(net)
-    outputs = Dense(nclass,activation='softmax')(net)
-    return inputs,input_global,outputs
+    outputs = Dense(128,activation='relu')(net)    
+    return inputs,outputs
 
-def PCT_simple(npoints,inputs_global,nvars=1,nclass=2,nheads=1):
+def PCT_simple(input_global,npoints,nvars=1,nclass=2,nheads=1):
     inputs = Input((npoints,nvars))
     batch_size = tf.shape(inputs)[0]
     
     pc_transform = Conv1D(128, kernel_size = 1,strides=1,activation='relu')(inputs)
-    pc_transform = Conv1D(64, kernel_size = 1,strides=1,activation='relu')(pc_transform)
+    pc_transform = Conv1D(32*nheads, kernel_size = 1,strides=1,activation='relu')(pc_transform)
     
     mask = tf.where(inputs[:,:,2]==0,K.ones_like(inputs[:,:,2]),K.zeros_like(inputs[:,:,2]))
     
-    self_att_1,attention1 = GetSelfAtt(tf.squeeze(pc_transform),mask,32*nheads,nheads)
-    self_att_2,attention2 = GetSelfAtt(tf.squeeze(pc_transform) + self_att_1,mask,32*nheads,nheads)
+    self_att_1,attention1 = GetSelfAtt(pc_transform,mask,32*nheads,nheads)
+    self_att_2,attention2 = GetSelfAtt(pc_transform + self_att_1,mask,32*nheads,nheads)
 
     concat = tf.concat([
         self_att_1,
@@ -279,12 +273,7 @@ def PCT_simple(npoints,inputs_global,nvars=1,nclass=2,nheads=1):
     net = tf.concat([net_mean,net_max,net_glob],axis=-1)
     #net = BatchNormalization()(net)
 
-    net = Dense(128,activation='relu')(net)
-    
-    #net = BatchNormalization()(net) 
-    net = Dropout(0.2)(net)
-    net = Dense(64,activation='relu')(net)
-    outputs = Dense(nclass,activation='softmax')(net)
+    outputs = Dense(128,activation='relu')(net)
     return inputs,outputs
 
 
